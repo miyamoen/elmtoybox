@@ -1,8 +1,12 @@
 package main
 
 import (
+	cryptoRand "crypto/rand"
 	"fmt"
 	"log"
+	"math"
+	"math/big"
+	"math/rand"
 	"os"
 	"os/signal"
 	"strings"
@@ -53,8 +57,21 @@ func initialize() (*Config, error) {
 		log.Fatal("Error loading .env file")
 		return nil, err
 	}
+	err = initRandSeed()
+	if err != nil {
+		return nil, err
+	}
 	return &Config{token: os.Getenv("BOT_TOKEN")}, nil
 
+}
+
+func initRandSeed() error {
+	seed, err := cryptoRand.Int(cryptoRand.Reader, big.NewInt(math.MaxInt64))
+	if err != nil {
+		return err
+	}
+	rand.Seed(seed.Int64())
+	return nil
 }
 
 func onMessageCreate(session *discordgo.Session, msg *discordgo.MessageCreate) {
