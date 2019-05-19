@@ -1,4 +1,4 @@
-module github.com/miyamoen/try-go
+module github.com/miyamoen/elmtoyboxbot
 
 go 1.12
 
