@@ -2,19 +2,23 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-)
-
-var (
-	token = ""
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	discord, err := discordgo.New("Bot " + token)
+	config, err := initialize()
+	if err != nil {
+		log.Fatal("error initializing bot app,", err)
+	}
+
+	discord, err := discordgo.New("Bot " + config.token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return
@@ -38,6 +42,21 @@ func main() {
 	return
 }
 
+// Config is 設定値
+type Config struct {
+	token string
+}
+
+func initialize() (*Config, error) {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+		return nil, err
+	}
+	return &Config{token: os.Getenv("BOT_TOKEN")}, nil
+
+}
+
 func onMessageCreate(session *discordgo.Session, msg *discordgo.MessageCreate) {
 	user := msg.Author
 	if user.ID == session.State.User.ID || user.Bot {
@@ -46,11 +65,11 @@ func onMessageCreate(session *discordgo.Session, msg *discordgo.MessageCreate) {
 
 	content := msg.Content
 
-	switch content {
-	case "ping", "Ping":
+	switch strings.ToLower(content) {
+	case "ping", "ping!":
 		session.ChannelMessageSend(msg.ChannelID, "Pong!")
 
-	case "pong", "Pong!":
+	case "pong", "pong!":
 		session.ChannelMessageSend(msg.ChannelID, "Ping!")
 	}
 
